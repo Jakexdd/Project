@@ -1,48 +1,46 @@
-<!DOCTYPE html>rt Flask, render_template, request, redirect, url_for, session, flash
-<html lang="en">chemy import SQLAlchemy
-<head>unctools import wraps
-  <meta charset="UTF-8">etime
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>Add New Service</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-</head>fig['SECRET_KEY'] = 'yoursecretkey'  # Change to a secure key in production
-<body>nfig['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///outage.db'
-  <div class="container mt-4">ODIFICATIONS'] = False
+</head>
+<body>
+  <div class="container mt-4">
     <h1>Add New Service</h1>
     <hr>
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}'
+      {% if messages %}
         {% for category, message in messages %}
           <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
             {{ message }}
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-          </div>mn(db.Integer, primary_key=True)
-        {% endfor %}(db.String(100), nullable=False)
-      {% endif %}ld be "up" or "down" (you could extend this if needed)
-    {% endwith %}olumn(db.String(20), nullable=False)
-    <form method="POST">umn(db.Text, nullable=True)  # Add this line    <form method="POST">
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST">
       <div class="form-group">
         <label for="name">Service Name:</label>
         <input type="text" name="name" id="name" class="form-control" required>
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
-    report_text = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    # create a relationship so you can easily get the service details
-    service = db.relationship('Service', backref=db.backref('reports', lazy=True))          <option value="up">Up</option>
-</option>
-# Decorator to protect admin routes
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):/label>
-        if not session.get('admin_logged_in'):></textarea>
-            flash('Please log in as admin to access that page.', 'danger')
-            return redirect(url_for('admin_login'))="btn btn-success">Add Service</button>
-      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>ipt>
-    </form>s/bootstrap.min.js"></script>
+      </div>
+      <div class="form-group">
+        <label for="status">Status:</label>
+        <select name="status" id="status" class="form-control" required>
+          <option value="up">Up</option>
+          <option value="down">Down</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea name="description" id="description" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-success">Add Service</button>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </form>
   </div>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>c outage board page
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>@app.route('/')def index():    services = Service.query.all()    return render_template('index.html', services=services)# Route for reporting an outage on a specific service@app.route('/report/<int:service_id>', methods=['GET', 'POST'])def report(service_id):    service = Service.query.get_or_404(service_id)    if request.method == 'POST':        report_text = request.form.get('report_text')        if report_text:            new_report = OutageReport(service_id=service.id, report_text=report_text)            db.session.add(new_report)            db.session.commit()            flash('Report submitted successfully!', 'success')            return redirect(url_for('index'))        else:            flash('Please enter a report.', 'danger')    return render_template('report.html', service=service)# Admin login page@app.route('/admin/login', methods=['GET', 'POST'])def admin_login():    if request.method == 'POST':        username = request.form.get('username')        password = request.form.get('password')        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:            session['admin_logged_in'] = True            flash('Logged in successfully!', 'success')            return redirect(url_for('admin_dashboard'))        else:            flash('Invalid credentials. Please try again.', 'danger')    return render_template('admin_login.html')# Admin logout@app.route('/admin/logout')@admin_requireddef admin_logout():    session.pop('admin_logged_in', None)    flash('Logged out successfully!', 'success')    return redirect(url_for('index'))# Admin dashboard to view and manage services and reports@app.route('/admin')@admin_requireddef admin_dashboard():    services = Service.query.all()    reports = OutageReport.query.order_by(OutageReport.timestamp.desc()).all()    return render_template('admin_dashboard.html', services=services, reports=reports)# Admin route to add a new service@app.route('/admin/service/add', methods=['GET', 'POST'])@admin_requireddef add_service():    if request.method == 'POST':        name = request.form.get('name')        status = request.form.get('status')        if name and status:            new_service = Service(name=name, status=status)            db.session.add(new_service)            db.session.commit()            flash('Service added successfully!', 'success')            return redirect(url_for('admin_dashboard'))        else:            flash('All fields are required.', 'danger')    return render_template('add_service.html')# Admin route to edit an existing service@app.route('/admin/service/edit/<int:service_id>', methods=['GET', 'POST'])@admin_requireddef edit_service(service_id):    service = Service.query.get_or_404(service_id)    if request.method == 'POST':        service.name = request.form.get('name')        service.status = request.form.get('status')        db.session.commit()        flash('Service updated successfully!', 'success')        return redirect(url_for('admin_dashboard'))    return render_template('edit_service.html', service=service)if __name__ == '__main__':    # Create the SQLite database and tables if they don't exist.    with app.app_context():        db.create_all()    app.run(debug=True)# Ensure the database is created when running with Gunicorn@app.before_requestdef create_tables():    db.create_all()
-
-
-
-
-</html></body>  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>
