@@ -4,4 +4,3 @@ flask-wtf
 flask-session
 gunicorn
 flask-migrate
-```
