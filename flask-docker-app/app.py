@@ -125,3 +125,8 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
+# Ensure the database is created when running with Gunicorn
+@app.before_first_request
+def create_tables():
+    db.create_all()
