@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from functools import wraps
 from datetime import datetime
 
@@ -8,6 +9,7 @@ app.config['SECRET_KEY'] = 'yoursecretkey'  # Change to a secure key in producti
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///outage.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Hardcoded admin credentials (update for production)
 ADMIN_USERNAME = 'admin'
@@ -19,6 +21,7 @@ class Service(db.Model):
     name = db.Column(db.String(100), nullable=False)
     # status should be "up" or "down" (you could extend this if needed)
     status = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.Text, nullable=True)  # Add this line
 
 class OutageReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -97,8 +100,9 @@ def add_service():
     if request.method == 'POST':
         name = request.form.get('name')
         status = request.form.get('status')
+        description = request.form.get('description')  # Add this line
         if name and status:
-            new_service = Service(name=name, status=status)
+            new_service = Service(name=name, status=status, description=description)  # Add description here
             db.session.add(new_service)
             db.session.commit()
             flash('Service added successfully!', 'success')
@@ -115,6 +119,7 @@ def edit_service(service_id):
     if request.method == 'POST':
         service.name = request.form.get('name')
         service.status = request.form.get('status')
+        service.description = request.form.get('description')  # Add this line
         db.session.commit()
         flash('Service updated successfully!', 'success')
         return redirect(url_for('admin_dashboard'))

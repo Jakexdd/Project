@@ -35,6 +35,9 @@
                 <span class="badge badge-danger">Down</span>
               {% endif %}
             </p>
+            {% if service.description %}
+              <p>Description: {{ service.description }}</p>
+            {% endif %}
             <a href="{{ url_for('report', service_id=service.id) }}" class="btn btn-primary">Report Issue</a>
           </div>
         </div>
