@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Report Issue - {{ service.name }}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>Report Issue for {{ service.name }}</h1>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST">
+      <div class="form-group">
+        <label for="report_text">Describe the issue:</label>
+        <textarea name="report_text" id="report_text" rows="5" class="form-control" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Report</button>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>
