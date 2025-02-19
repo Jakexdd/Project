@@ -1,23 +1,17 @@
-# Use a lightweight Python image
+# Use a lightweight Python base image
 FROM python:3.10-slim
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy only requirements.txt first to leverage Docker cache
-COPY requirements.txt /app/
+# Copy the project files
+COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the project files into the container
-COPY . /app
+# Expose the correct port (Fly.io expects 8080)
+EXPOSE 8080
 
-# Expose the port Flask runs on
-EXPOSE 5000
-
-# Ensure the SQLite database is created
-RUN mkdir -p /app/instance
-
-# Command to start the Flask app using Gunicorn for production
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+# Run the app with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
