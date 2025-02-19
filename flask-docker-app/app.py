@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yoursecretkey'  # Change to a secure key in production
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///outage.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/outage.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
