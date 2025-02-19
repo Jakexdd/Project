@@ -3,6 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from functools import wraps
 from datetime import datetime
+import os
+
+# Ensure the persistent directory exists for SQLite storage
+if not os.path.exists('/data'):
+    os.makedirs('/data', exist_ok=True)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yoursecretkey'  # Change to a secure key in production
@@ -102,7 +107,7 @@ def add_service():
         status = request.form.get('status')
         description = request.form.get('description')  # Add this line
         if name and status:
-            new_service = Service(name=name, status=status, description=description)  # Add description here
+            new_service = Service(name=name, status=status, description=description)  # Include description here
             db.session.add(new_service)
             db.session.commit()
             flash('Service added successfully!', 'success')
@@ -125,13 +130,13 @@ def edit_service(service_id):
         return redirect(url_for('admin_dashboard'))
     return render_template('edit_service.html', service=service)
 
+# Ensure the database is created when running with Gunicorn
+@app.before_request
+def create_tables():
+    db.create_all()
+
 if __name__ == '__main__':
     # Create the SQLite database and tables if they don't exist.
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
-# Ensure the database is created when running with Gunicorn
-@app.before_request
-def create_tables():
-    db.create_all()
