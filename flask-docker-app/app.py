@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from functools import wraps
@@ -19,6 +19,13 @@ migrate = Migrate(app, db)
 # Hardcoded admin credentials (update for production)
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'password'
+
+# Define a folder to store the PDFs
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Models
 class Service(db.Model):
@@ -50,7 +57,33 @@ def admin_required(f):
 @app.route('/')
 def index():
     services = Service.query.all()
-    return render_template('index.html', services=services)
+    # Get list of PDFs from the upload folder
+    pdf_files = []
+    for filename in os.listdir(app.config['UPLOAD_FOLDER']):
+        if filename.lower().endswith('.pdf'):
+            pdf_files.append(filename)
+    return render_template('index.html', services=services, pdf_files=pdf_files)
+
+
+@app.route('/upload', methods=['POST'])
+def upload_pdf():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected for uploading'}), 400
+    if file and file.filename.lower().endswith('.pdf'):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return jsonify({'message': 'File successfully uploaded', 'filename': filename}), 200
+    else:
+        return jsonify({'error': 'Allowed file type is pdf'}), 400
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Route for reporting an outage on a specific service
 @app.route('/report/<int:service_id>', methods=['GET', 'POST'])
