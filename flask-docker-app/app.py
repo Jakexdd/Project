@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from functools import wraps
 from datetime import datetime
+from werkzeug.utils import secure_filename
 import os
 
 # Ensure the persistent directory exists for SQLite storage
@@ -11,7 +12,7 @@ if not os.path.exists('/data'):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yoursecretkey'  # Change to a secure key in production
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/outage.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlitefrom werkzeug.utils import secure_filename:////data/outage.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
